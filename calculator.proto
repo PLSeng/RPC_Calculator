@@ -1,0 +1,68 @@
+syntax = "proto3";
+
+package demo;
+
+// ────────────────────────────
+// 1.  Basic arithmetic service
+// ────────────────────────────
+service Calculator {
+
+  // Unary RPCs (share the same request / reply types)
+  rpc Add      (BinaryRequest) returns (BinaryReply);
+  rpc Subtract (BinaryRequest) returns (BinaryReply);
+  rpc Multiply (BinaryRequest) returns (BinaryReply);
+  rpc Power    (PowerRequest)  returns (BinaryReply);
+
+  // Division — uses a specialised reply (quotient + remainder)
+  rpc Divide   (BinaryRequest) returns (DivideReply);
+
+  // Server-streaming RPC – emits each step of a factorial calculation
+  rpc Factorial (UnaryRequest) returns (stream FactorialStep);
+}
+
+// ────────────────────────────
+// 2.  Statistics service
+// ────────────────────────────
+service Stats {
+  // Client streams numbers, server replies once with mean & variance
+  rpc DescriptiveStats (stream Value) returns (StatsReply);
+}
+
+// ────────────────────────────
+// 3.  Message definitions
+// ────────────────────────────
+
+// Re-used for Add, Subtract, Multiply, Divide, Power
+message BinaryRequest {
+  int32 x = 1;
+  int32 y = 2;
+}
+message BinaryReply {
+  int32 result = 1;
+}
+
+// Dedicated divide reply
+message DivideReply {
+  int32 quotient  = 1;
+  int32 remainder = 2;
+}
+
+// Power(x, n) → x^n
+message PowerRequest {
+  int32 base     = 1;
+  int32 exponent = 2;
+}
+
+// Factorial(n) streaming steps
+message UnaryRequest  { int32 n = 1; }
+message FactorialStep {
+  int32 step        = 1;   // k
+  int64 accumulator = 2;   // k!
+}
+
+// Stats service messages
+message Value      { double v = 1; }
+message StatsReply {
+  double mean      = 1;
+  double variance  = 2;
+}
